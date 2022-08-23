@@ -25,7 +25,7 @@ namespace TesteBackendEnContact.Controllers
             return Ok(await companyRepository.SaveAsync(company.ToCompany()));
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task Delete(int id, [FromServices] ICompanyRepository companyRepository)
         {
             await companyRepository.DeleteAsync(id);
