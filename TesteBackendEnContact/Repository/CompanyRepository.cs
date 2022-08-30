@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
 using Microsoft.Data.Sqlite;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,16 +38,22 @@ namespace TesteBackendEnContact.Repository
         public async Task DeleteAsync(int id)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
-            connection.Open();
-            var transaction = connection.BeginTransaction();
 
-            var sql = new StringBuilder();
-            sql.AppendLine("DELETE FROM Company WHERE Id = @id;");
-            sql.AppendLine("UPDATE Contact SET CompanyId = null WHERE CompanyId = @id;");
+            try
+            {
+                connection.Open();
+                var sql = new StringBuilder();
 
-            await connection.ExecuteAsync(sql.ToString(), new { id }, transaction);
+                sql.AppendLine("DELETE FROM Company WHERE Id = @id;");
+                sql.AppendLine("UPDATE Contact SET CompanyId = null WHERE CompanyId = @id;");
 
-            connection.Close();
+                await connection.ExecuteAsync(sql.ToString(), new { id });
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
         public async Task<IEnumerable<ICompany>> GetAllAsync()
