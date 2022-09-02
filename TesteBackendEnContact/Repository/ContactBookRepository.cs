@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
 using Microsoft.Data.Sqlite;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,9 +27,15 @@ namespace TesteBackendEnContact.Repository
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
             var dao = new ContactBookDao(contactBook);
 
-            dao.Id = await connection.InsertAsync(dao);
+            try
+            {
+                dao.Id = await connection.InsertAsync(dao);
+                return dao.Export();
 
-            return dao.Export();
+            }catch(Exception e)
+            {
+                throw e;
+            }
         }
 
 
@@ -36,10 +43,17 @@ namespace TesteBackendEnContact.Repository
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
-            // TODO
-            var sql = "";
-
-            await connection.ExecuteAsync(sql);
+            try
+            {
+                connection.Open();
+                var sql = "DELETE FROM ContactBook WHERE Id = @id";
+                await connection.ExecuteAsync(sql, new { id });
+                connection.Close();
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
 
 
@@ -84,7 +98,7 @@ namespace TesteBackendEnContact.Repository
         public ContactBookDao(IContactBook contactBook)
         {
             Id = contactBook.Id;
-            Name = Name;
+            Name = contactBook.Name;
         }
 
         public IContactBook Export() => new ContactBook(Id, Name);
